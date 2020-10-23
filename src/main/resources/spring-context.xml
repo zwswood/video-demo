@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:task="http://www.springframework.org/schema/task"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+	<!-- 自动扫描 -->
+	<context:component-scan base-package="com.linrun.ssm" />
+
+	<!-- 定义quartz注解驱动 -->
+	<task:annotation-driven />
+	<context:component-scan base-package="com.linrun.task" />
+
+	<!-- 加载外部db.properties -->
+	<context:property-placeholder location="classpath:db.properties" />
+
+	<!-- c3p0配置 -->
+	<!-- 配置数据源 -->
+	<!-- <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"> -->
+		<!-- <property name="user" value="${jdbc.user}"></property> -->
+		<!-- <property name="password" value="${jdbc.password}"></property> -->
+		<!-- <property name="jdbcUrl" value="${jdbc.url}"></property> -->
+		<!-- <property name="driverClass" value="${jdbc.driver}"></property> -->
+		<!-- c3p0连接池的私有属性 -->
+		<!-- <property name="maxPoolSize" value="30" /> -->
+		<!-- <property name="minPoolSize" value="10" /> -->
+		<!-- 关闭连接后不自动commit -->
+		<!-- <property name="autoCommitOnClose" value="false" /> -->
+		<!-- 获取连接超时时间 -->
+		<!-- <property name="checkoutTimeout" value="10000" /> -->
+		<!-- 当获取连接失败重试次数 -->
+		<!-- <property name="acquireRetryAttempts" value="2" /> -->
+	<!-- </bean> -->
+
+	<!-- druid配置 -->
+	<!-- 业务数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="username" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<!-- 可根据url自动匹配driver -->
+		<property name="url" value="${jdbc.url}"></property>
+		<!-- 配置初始化连接数量、最小和最大连接池数量 -->
+		<property name="initialSize" value="${druid.initialSize}"/>
+		<property name="minIdle" value="${druid.minIdle}"/>
+		<property name="maxActive" value="${druid.maxActive}"/>
+		<!-- 配置获取连接等待超时的时间,缺省使用非公平锁,并发效率有所下降 -->
+		<property name="maxWait" value="${druid.maxWait}"/>
+		<!-- 配置间隔多久才进行一次检测,检测需要关闭的空闲连接,单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}"/>
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}"/>
+		<!-- 用来检测连接是否有效的sql -->
+		<property name="validationQuery" value="${druid.validationQuery.oracle}"/>
+		<!-- 建议配置为true,不影响性能,并且保证安全性 -->
+		<property name="testWhileIdle" value="${druid.testWhileIdle}"/>
+		<!-- 申请连接时执行validtionQuery检测连接是否有效,做了这个配置会降低性能 -->
+		<property name="testOnBorrow" value="${druid.testOnBorrow}"/>
+		<!-- 归还连接时执行validtionQuery检测连接是否有效,做了这个配置会降低性能 -->
+		<property name="testOnReturn" value="${druid.testOnReturn}"/>
+		<!-- 打开PSCache,并且指定每个连接上PSCache的大小;如果用Oracle,则把poolPreparedStatements配置为true;mysql可以配置为false,因为mysql5.5版本没有PSCache功能 -->
+		<property name="poolPreparedStatements" value="${druid.poolPreparedStatements}"/>
+		<!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandoned" value="${druid.removeAbandoned}" />
+		<!-- 1800秒，也就是30分钟 -->
+		<property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="${druid.logAbandoned}" />
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="${druid.filters}"/>
+		<!-- 慢sql监控及log4j设置,不想监控的话将proxyFilters属性删除即可 -->
+		<property name="proxyFilters">
+			<list>
+				<ref bean="stat-filter"/>
+				<ref bean="log-filter"/>
+			</list>
+		</property>
+	</bean>
+	<!-- 状态数据源 -->
+	<!--<bean id="dataSource4state" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">-->
+		<!--<property name="username" value="${jdbc.state.user}" />-->
+		<!--<property name="password" value="${jdbc.state.password}" />-->
+		<!--&lt;!&ndash; 可根据url自动匹配driver &ndash;&gt;-->
+		<!--<property name="url" value="${jdbc.state.url}" />-->
+		<!--&lt;!&ndash; 配置初始化连接数量、最小和最大连接池数量 &ndash;&gt;-->
+		<!--<property name="initialSize" value="${druid.initialSize}" />-->
+		<!--<property name="minIdle" value="${druid.minIdle}" />-->
+		<!--<property name="maxActive" value="${druid.maxActive}" />-->
+		<!--&lt;!&ndash; 配置获取连接等待超时的时间,缺省使用非公平锁,并发效率有所下降 &ndash;&gt;-->
+		<!--<property name="maxWait" value="${druid.maxWait}" />-->
+		<!--&lt;!&ndash; 配置间隔多久才进行一次检测,检测需要关闭的空闲连接,单位是毫秒 &ndash;&gt;-->
+		<!--<property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />-->
+		<!--&lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;-->
+		<!--<property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />-->
+		<!--&lt;!&ndash; 用来检测连接是否有效的sql &ndash;&gt;-->
+		<!--<property name="validationQuery" value="${druid.validationQuery.oracle}" />-->
+		<!--&lt;!&ndash; 建议配置为true,不影响性能,并且保证安全性 &ndash;&gt;-->
+		<!--<property name="testWhileIdle" value="${druid.testWhileIdle}" />-->
+		<!--&lt;!&ndash; 申请连接时执行validtionQuery检测连接是否有效,做了这个配置会降低性能 &ndash;&gt;-->
+		<!--<property name="testOnBorrow" value="${druid.testOnBorrow}" />-->
+		<!--&lt;!&ndash; 归还连接时执行validtionQuery检测连接是否有效,做了这个配置会降低性能 &ndash;&gt;-->
+		<!--<property name="testOnReturn" value="${druid.testOnReturn}" />-->
+		<!--&lt;!&ndash; 打开PSCache,并且指定每个连接上PSCache的大小;如果用Oracle,则把poolPreparedStatements配置为true;mysql可以配置为false,因为mysql5.5版本没有PSCache功能 &ndash;&gt;-->
+		<!--<property name="poolPreparedStatements" value="${druid.poolPreparedStatements}" />-->
+		<!--&lt;!&ndash; 打开removeAbandoned功能 &ndash;&gt;-->
+		<!--<property name="removeAbandoned" value="${druid.removeAbandoned}" />-->
+		<!--&lt;!&ndash; 1800秒，也就是30分钟 &ndash;&gt;-->
+		<!--<property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />-->
+		<!--&lt;!&ndash; 关闭abanded连接时输出错误日志 &ndash;&gt;-->
+		<!--<property name="logAbandoned" value="${druid.logAbandoned}" />-->
+		<!--&lt;!&ndash; 配置监控统计拦截的filters &ndash;&gt;-->
+		<!--<property name="filters" value="${druid.filters}"/>-->
+		<!--&lt;!&ndash; 慢sql监控及log4j设置,不想监控的话将proxyFilters属性删除即可 &ndash;&gt;-->
+		<!--<property name="proxyFilters">-->
+			<!--<list>-->
+				<!--<ref bean="stat-filter" />-->
+				<!--<ref bean="log-filter" />-->
+			<!--</list>-->
+		<!--</property>-->
+	<!--</bean>-->
+	<!-- 动态数据源配置 -->
+	<bean id="dynamicDataSource" class="com.linrun.ssm.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<!-- 业务数据源 -->
+				<entry key="businessDataSource" value-ref="dataSource" />
+				<!-- 地图数据源 -->
+				<!--<entry key="mapDataSource" value-ref="dataSource4map" />-->
+				<!-- 状态数据源 -->
+				<!--<entry key="stateDataSource" value-ref="dataSource4state" />-->
+			</map>
+		</property>
+		<!-- 设置默认数据源 -->
+		<property name="defaultTargetDataSource" ref="dataSource" />
+	</bean>
+	<!-- 数据源动态切换实体 -->
+	<bean id="dataSourceInterceptor" class="com.linrun.ssm.interceptor.DynamicDataSourceInterceptor" />
+	<!-- 监控统计 -->
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="mergeSql" value="true"/>
+		<!-- 慢sql时间设置,即执行时间大于500毫秒的都是慢sql -->
+		<property name="slowSqlMillis" value="500" />
+		<property name="logSlowSql" value="true" />
+	</bean>
+	<!-- 日志监控 -->
+	<bean id="log-filter" class="com.alibaba.druid.filter.logging.Log4jFilter">
+		<property name="dataSourceLogEnabled" value="true" />
+		<property name="statementExecutableSqlLogEnable" value="true" />
+	</bean>
+	<!-- 防御SQL注入-->
+	<!--
+	<bean id="wall-filter" class="com.alibaba.druid.wall.WallFilter">
+		<property name="dbType" value="mysql" />
+	</bean>
+	-->
+
+	<!-- spring mybatis整合 配置sessionFactory -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 单数据源配置 -->
+		<!--<property name="dataSource" ref="dataSource" />-->
+		<!-- 多数据源配置 -->
+		<property name="dataSource" ref="dynamicDataSource" />
+		<!-- 实体映射器 -->
+		<property name="mapperLocations" value="classpath:mappers/*.xml" />
+		<!-- 为整个包下的类指定类型别名,如com.linrun.ssm.entity.User的别名为User -->
+		<property name="typeAliasesPackage" value="com.linrun.ssm.entity.bo"/>
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+	</bean>
+	<!-- Mybatis接口自动注入IOC容器 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.linrun.ssm.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sessionFactory" />
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean id="transationManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 单数据源配置 -->
+		<!--<property name="dataSource" ref="dataSource" />-->
+		<!-- 多数据源配置 -->
+		<property name="dataSource" ref="dynamicDataSource" />
+	</bean>
+
+	<tx:advice id="transactionAdvice" transaction-manager="transationManager">
+		<!-- 定义事务声明规则,名称前缀为如下定义的方法具有事务性 -->
+		<tx:attributes>
+			<!-- 插入 -->
+			<tx:method name="add*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="insert*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception"/>
+			<!-- 更新 -->
+			<tx:method name="edit*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<!-- 删除 -->
+			<tx:method name="remove*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<!-- 查询 -->
+			<tx:method name="get*" propagation="SUPPORTS" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="find*" propagation="SUPPORTS" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="list*" propagation="SUPPORTS" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="query*" propagation="SUPPORTS" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="select*" propagation="SUPPORTS" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<!-- 保存（插入或更新） -->
+			<tx:method name="save*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<!-- 其他(动作) -->
+			<tx:method name="do*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+			<tx:method name="execute*" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- 1.拦截器方式配置事务 -->
+	<!--<aop:config>
+		<aop:aspect id="dataSourceAspect" ref="dataSourceInterceptor" order="1">
+			&lt;!&ndash; 拦截所有service实现类的方法 &ndash;&gt;
+			<aop:pointcut id="dataSourcePointcut" expression="execution(* com.linrun.ssm.service..*Impl.*(..))" />
+			&lt;!&ndash; 拦截方法 &ndash;&gt;
+			<aop:before pointcut-ref="dataSourcePointcut" method="intercept" />
+			&lt;!&ndash;<aop:after pointcut-ref="dataSourcePointcut" method="after" />&ndash;&gt;
+		</aop:aspect>
+	</aop:config>
+	<aop:config>
+		<aop:pointcut id="transactionPointcut" expression="execution(* com.linrun.ssm.service..*Impl.*(..))" />
+		&lt;!&ndash; 设置order的值为2,使得数据库事务开启在数据源切换之后,否则数据源切换不会达到效果 &ndash;&gt;
+		<aop:advisor pointcut-ref="transactionPointcut" advice-ref="transactionAdvice" order="2" />
+	</aop:config>-->
+
+	<!-- 2.注解式事务配置,这种方式就是你哪个方法需要事务就在方法上写上@Transactional 这个标记 -->
+	 <tx:annotation-driven transaction-manager="transationManager" />
+</beans>
