@@ -1,5 +1,19 @@
 
 //============================工具方法==============================
+
+// 扩展实现StringBuffer
+function StringBuffer() {
+    this._str_ = new Array();
+}
+
+StringBuffer.prototype.append = function (str) {
+    this._str_.push(str);
+    return this;
+}
+StringBuffer.prototype.toString = function () {
+    return this._str_.join("");
+}
+
 // 将时间格式转为具体的秒：00:01:01==>61
 function TimeToSeconds(value) {
     let arr = value.split(':');
@@ -62,4 +76,36 @@ function SecondsToTime(value) {
         result = "" + parseInt(theTime2) + ":" + result; //时
     }
     return result;
+}
+
+
+/**
+ * 播放时间换算
+ * @param {number} value - 音频当前播放时间，单位秒
+ */
+function transTime(value) {
+    var time = "";
+    var h = parseInt(value / 3600);
+    value %= 3600;
+    var m = parseInt(value / 60);
+    var s = parseInt(value % 60);
+    time = formatTime(h + ":" + m + ":" + s);
+    return time;
+}
+
+/**
+ * 格式化时间显示，补零对齐
+ * eg：2:4  -->  02:04
+ * @param {string} value - 形如 h:m:s 的字符串
+ */
+function formatTime(value) {
+    var time = "";
+    var s = value.split(':');
+    var i = 0;
+    for (; i < s.length - 1; i++) {
+        time += s[i].length == 1 ? ("0" + s[i]) : s[i];
+        time += ":";
+    }
+    time += s[i].length == 1 ? ("0" + s[i]) : s[i];
+    return time;
 }
