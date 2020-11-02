@@ -1,9 +1,8 @@
 package com.linrun.ssm.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +98,10 @@ public class VideoController extends BaseController {
                     || filename_extension.equals("flv") || filename_extension.equals("ogg")
 
             ) {
-                FFmpegUtils utils = new FFmpegUtils();
+                String rquestPath = request.getSession().getServletContext().getRealPath("");
+                // ffmpeg工具地址
+                String libPath = rquestPath + "WEB-INF\\classes\\libs\\ffmpeg\\ffmpeg.exe";
+                FFmpegUtils utils = new FFmpegUtils(libPath);
                 utils.ConvertVideoType(yuanPATH, "mp4");
             }
             String newFileName = currentDate + ".mp4";
@@ -137,7 +139,11 @@ public class VideoController extends BaseController {
         String result = "";
         String path = request.getSession().getServletContext().getRealPath("") + "video\\";
         String realPath = path + fileName;
-        FFmpegUtils ffUtils = new FFmpegUtils();
+
+        String rquestPath = request.getSession().getServletContext().getRealPath("");
+        // ffmpeg工具地址
+        String libPath = rquestPath + "WEB-INF\\classes\\libs\\ffmpeg\\ffmpeg.exe";
+        FFmpegUtils ffUtils = new FFmpegUtils(libPath);
         File f = new File(realPath);
         if (!f.exists()) {
             System.out.println("不存在文件,先上传");
@@ -183,4 +189,44 @@ public class VideoController extends BaseController {
         }
         return result;
     }
+
+
+    /**
+     * 上传图片（base64方式）
+     *
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/upLoadImg")
+    public String upLoadImg(@RequestParam MultipartFile file, HttpServletRequest request) {
+        String strReturn = "";
+        try {
+
+            //时间戳做新的文件名，避免中文乱码-重新生成filename
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String currentDate = dateFormat.format(new Date());
+            String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            suffix = suffix.toLowerCase();
+
+            String filename = currentDate.concat(suffix);
+
+            String filePath = request.getSession().getServletContext().getRealPath("");
+            // 图片文件夹名称
+            String pictureDir = "cutImage";
+            filePath = filePath.concat(pictureDir);
+            File targetFile = new File(filePath, filename);
+            // 如果文件目录不存在,则创建文件目录
+            if (!targetFile.getParentFile().exists()) {
+                targetFile.getParentFile().mkdirs();
+            }
+            file.transferTo(targetFile); // 保存图片
+            strReturn = "1";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+        return strReturn;
+    }
+
 }

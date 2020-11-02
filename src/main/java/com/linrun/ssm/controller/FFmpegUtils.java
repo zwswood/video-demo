@@ -18,7 +18,13 @@ import java.util.List;
  */
 public class FFmpegUtils {
 
-    private String ffmpegpath = GlobalConst.ffmpegpath;         // ffmpeg.exe工具的目录
+    // 虹软人脸识别依赖包目录
+    private String ffmpegpath = "";         // ffmpeg.exe工具的目录
+
+    public FFmpegUtils(String path) {
+        ffmpegpath = path;
+    }
+
 
     /*
      * 功能描述: 视频格式转换
